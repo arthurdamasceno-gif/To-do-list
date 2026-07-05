@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #F0E68C; }
+        
+        .container { max-width: 400px; margin: auto; background: darkblue; padding: 20px; border-radius: 8px; box-shadow: 10 20px 50px rgba(0,0,0,0.0); }
+        .flex { display: flex; gap: 10px; margin-bottom: 40px; }
+        input { flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: #F0E68C }
+        button { padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        li { display: flex; justify-content: space-between; padding: 8px; background: #eee; margin-bottom: 5px; border-radius: 4px; align-items: center; }
+        .concluida { text-decoration: line-through; color: gray; }
+        .btn-excluir { background: #dc3545; padding: 4px 8px; }
+        h2 { color: #FFD700; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id:"texto1">My tasks</h2>
+        <div class="flex">
+            <input type="text" id="inputTarefa" placeholder="Enter a task...">
+            <button onclick="adicionarTarefa()">to add</button>
+        </div>
+        <ul id="listaTarefas"></ul>
+    </div>
+
+    <script>
+        // 1. Inicializa o array de tarefas buscando do LocalStorage, ou vazio se não houver nada
+        let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [];
+
+        function salvarNoLocalStorage() {
+            localStorage.setItem('tarefas', JSON.stringify(tarefas));
+        }
+
+        function renderizarTarefas() {
+            const lista = document.getElementById('listaTarefas');
+            lista.innerHTML = ''; // Limpa a tela antes de desenhar
+
+            tarefas.forEach((tarefa, index) => {
+                const li = document.createElement('li');
+                
+                // Cria o texto da tarefa e aplica classe se estiver concluída
+                const span = document.createElement('span');
+                span.innerText = tarefa.texto;
+                if (tarefa.concluida) span.classList.add('concluida');
+                span.onclick = () => alternarConcluir(index);
+
+                // Botão de excluir
+                const btn = document.createElement('button');
+                btn.innerText = 'X';
+                btn.classList.add('btn-excluir');
+                btn.onclick = (e) => {
+                    e.stopPropagation(); // Evita clicar no texto sem querer ao deletar
+                    excluirTarefa(index);
+                };
+
+                li.appendChild(span);
+                li.appendChild(btn);
+                lista.appendChild(li);
+            });
+        }
+
+        function adicionarTarefa() {
+            const input = document.getElementById('inputTarefa');
+            if (input.value.trim() === '') return; // Evita tarefa vazia
+
+            tarefas.push({ texto: input.value, concluida: false });
+            input.value = ''; // Limpa o input
+            salvarNoLocalStorage();
+            renderizarTarefas();
+        }
+
+        function alternarConcluir(index) {
+            tarefas[index].concluida = !tarefas[index].concluida;
+            salvarNoLocalStorage();
+            renderizarTarefas();
+        }
+
+        function excluirTarefa(index) {
+            tarefas.splice(index, 1); // Remove 1 item do array na posição index
+            salvarNoLocalStorage();
+            renderizarTarefas();
+        }
+
+        // Renderiza as tarefas salvas assim que o app abre
+        renderizarTarefas();
+    </script>
+</body>
+</html>
